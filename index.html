@@ -260,7 +260,7 @@ header {
 .color-chip:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.12); }
 
 .calendar-table {
-  width: max-content;
+  width: 100%;
   min-width: 700px;
   border-collapse: collapse;
   background: white;
@@ -1487,8 +1487,7 @@ function showView(id, btn) {
 // ══════════════════════════════════════════════════════════════════
 function buildCalendar() {
   const tbody = document.getElementById('calendarBody');
-  // Exclude green (foliage-only) plants from bloom calendar by default
-  const bloomers = PLANTS.filter(p => p.bloomMonths && p.bloomMonths.length > 0 && p.colorKey !== 'green');
+  const bloomers = PLANTS.filter(p => p.bloomMonths && p.bloomMonths.length > 0);
   tbody.innerHTML = bloomers.map(p => {
     const dotColor = p.colorKey ? COLORS[p.colorKey].hex : '#aaa';
     const cells = MONTHS.map((m, mi) =>
@@ -1515,12 +1514,13 @@ function filterCalendar(color, btn) {
   btn.classList.add('active');
   document.querySelectorAll('#calendarBody tr').forEach(row => {
     const keys = (row.dataset.colorkeys || '').split(',');
-    const isGreen = keys.indexOf('green') !== -1 && keys.length === 1;
-    // Green-only plants hidden unless green filter is active
+    const primaryColor = row.dataset.primarycolor;
+    const isGreenOnly = keys.length === 1 && keys[0] === 'green';
+    // Green-only plants hidden from 'all' view, shown only when green filter active
     const match = color === 'green'
       ? keys.indexOf('green') !== -1
       : color === 'all'
-        ? !isGreen
+        ? !isGreenOnly
         : keys.indexOf(color) !== -1;
     row.classList.toggle('hidden', !match);
     // Recolor bloom bars to match active filter color
@@ -1616,8 +1616,7 @@ function filterPlants(type, btn) {
 // ══════════════════════════════════════════════════════════════════
 function buildBuilderView() {
   const list = document.getElementById('builderChecklist');
-  // Exclude green (foliage-only) plants from bloom calendar by default
-  const bloomers = PLANTS.filter(p => p.bloomMonths && p.bloomMonths.length > 0 && p.colorKey !== 'green');
+  const bloomers = PLANTS.filter(p => p.bloomMonths && p.bloomMonths.length > 0);
   list.innerHTML = bloomers.map(p => {
     const dotColor = p.colorKey ? COLORS[p.colorKey].hex : '#aaa';
     return `<label class="builder-check" data-palette-id="${p.id}">
