@@ -1026,23 +1026,32 @@ footer a { color: #bbb; }
     <div class="calendar-filters">
       <span>Filter by color:</span>
       <button class="color-chip active" data-color="all" onclick="filterCalendar('all', this)">
-        <span class="dot" style="background:linear-gradient(135deg,#E8C832,#D4748C,#7B5EA7,#C4622D)"></span>
+        <span class="dot" style="background:linear-gradient(135deg,#E8C832,#D4748C,#7B5EA7,#C4312D)"></span>
         All Plants
       </button>
       <button class="color-chip" data-color="yellow" onclick="filterCalendar('yellow', this)">
         <span class="dot" style="background:#E8C832"></span>Yellow
       </button>
-      <button class="color-chip" data-color="purple" onclick="filterCalendar('purple', this)">
-        <span class="dot" style="background:#7B5EA7"></span>Purple/Blue
+      <button class="color-chip" data-color="orange" onclick="filterCalendar('orange', this)">
+        <span class="dot" style="background:#E8832A"></span>Orange
       </button>
       <button class="color-chip" data-color="red" onclick="filterCalendar('red', this)">
-        <span class="dot" style="background:#C4622D"></span>Red/Orange
+        <span class="dot" style="background:#C4312D"></span>Red
       </button>
       <button class="color-chip" data-color="pink" onclick="filterCalendar('pink', this)">
         <span class="dot" style="background:#D4748C"></span>Pink
       </button>
+      <button class="color-chip" data-color="purple" onclick="filterCalendar('purple', this)">
+        <span class="dot" style="background:#7B5EA7"></span>Purple
+      </button>
+      <button class="color-chip" data-color="blue" onclick="filterCalendar('blue', this)">
+        <span class="dot" style="background:#4A7FA5"></span>Blue
+      </button>
       <button class="color-chip" data-color="white" onclick="filterCalendar('white', this)">
         <span class="dot" style="background:#DDD;border:1px solid #bbb"></span>White
+      </button>
+      <button class="color-chip" data-color="green" onclick="filterCalendar('green', this)">
+        <span class="dot" style="background:#4A7A4A"></span>Green
       </button>
       <button class="color-chip" data-color="multi" onclick="filterCalendar('multi', this)">
         <span class="dot" style="background:linear-gradient(135deg,#E8C832 50%,#D4748C 50%)"></span>Multi
@@ -1248,16 +1257,28 @@ function seasonToMonths(seasons) {
   return Array.from(months).sort(function(a,b){ return a-b; });
 }
 
+function colorsToKeys(colors) {
+  // Returns an array of all matching color keys for this plant
+  if (!colors || !colors.length) return [];
+  const keySet = new Set();
+  colors.forEach(function(col) {
+    const c = col.toLowerCase();
+    if (c==='white'||c==='cream')        keySet.add('white');
+    else if (c==='yellow'||c==='gold')   keySet.add('yellow');
+    else if (c==='orange')               keySet.add('orange');
+    else if (c==='red')                  keySet.add('red');
+    else if (c==='pink'||c==='magenta')  keySet.add('pink');
+    else if (c==='purple'||c==='lavender')keySet.add('purple');
+    else if (c==='blue')                 keySet.add('blue');
+    else if (c==='green')                keySet.add('green');
+  });
+  if (colors.length > 1) keySet.add('multi');
+  return Array.from(keySet);
+}
+// Keep colorKey as primary (first) for dot color display
 function colorsToKey(colors) {
-  if (!colors || !colors.length) return null;
-  if (colors.length > 1) return 'multi';
-  const c = colors[0].toLowerCase();
-  if (c==='white'||c==='cream') return 'white';
-  if (c==='yellow'||c==='gold') return 'yellow';
-  if (c==='orange'||c==='red') return 'red';
-  if (c==='pink'||c==='magenta') return 'pink';
-  if (c==='purple'||c==='lavender'||c==='blue') return 'purple';
-  return 'multi';
+  const keys = colorsToKeys(colors);
+  return keys.length ? keys[0] : null;
 }
 
 function parseAirtablePlant(rec) {
@@ -1272,6 +1293,7 @@ function parseAirtablePlant(rec) {
     name:        f['Plant Name']       || '',
     type:        f['Plant Type']       || 'Shrub',
     color:       bloomColors.join(', ')|| '—',
+    colorKeys:   colorsToKeys(bloomColors),
     colorKey:    colorsToKey(bloomColors),
     blooms:      bloomSeasons.join(', ')|| null,
     bloomMonths: seasonToMonths(bloomSeasons),
@@ -1381,12 +1403,15 @@ function showErrorState() {
 
 // Color definitions
 const COLORS = {
-  yellow: { hex: "#E8C832", label: "Yellow & Gold",   emoji: "🌼" },
-  purple: { hex: "#7B5EA7", label: "Purple & Blue",   emoji: "💜" },
-  red:    { hex: "#C4622D", label: "Red & Orange",    emoji: "🔴" },
-  pink:   { hex: "#D4748C", label: "Pink & Rose",     emoji: "🌸" },
-  white:  { hex: "#E0DDD8", label: "White & Cream",   emoji: "🤍" },
-  multi:  { hex: "#A8BB8A", label: "Multi-Color",     emoji: "🌈" },
+  yellow: { hex: "#E8C832", label: "Yellow",      emoji: "🌼" },
+  orange: { hex: "#E8832A", label: "Orange",      emoji: "🟠" },
+  red:    { hex: "#C4312D", label: "Red",         emoji: "🔴" },
+  pink:   { hex: "#D4748C", label: "Pink",        emoji: "🌸" },
+  purple: { hex: "#7B5EA7", label: "Purple",      emoji: "💜" },
+  blue:   { hex: "#4A7FA5", label: "Blue",        emoji: "🔵" },
+  white:  { hex: "#E0DDD8", label: "White",       emoji: "🤍" },
+  green:  { hex: "#4A7A4A", label: "Green",       emoji: "🌿" },
+  multi:  { hex: "#A8BB8A", label: "Multi-Color", emoji: "🌈" },
 };
 
 
@@ -1468,7 +1493,7 @@ function buildCalendar() {
         ? `<td><span class="bloom-block" style="background:${dotColor}"></span></td>`
         : `<td></td>`
     ).join('');
-    return `<tr data-colorkey="${p.colorKey||'none'}" onclick="openModal(${p.id})">
+    return `<tr data-colorkeys="${(p.colorKeys||[]).join(',')||'none'}" onclick="openModal(${p.id})">
       <td class="plant-name-cell">
         <span class="color-dot" style="background:${dotColor}"></span>${p.name}
       </td>${cells}
@@ -1486,7 +1511,8 @@ function filterCalendar(color, btn) {
   document.querySelectorAll('.color-chip').forEach(c => c.classList.remove('active'));
   btn.classList.add('active');
   document.querySelectorAll('#calendarBody tr').forEach(row => {
-    const match = color === 'all' || row.dataset.colorkey === color;
+    const keys = (row.dataset.colorkeys || '').split(',');
+    const match = color === 'all' || keys.indexOf(color) !== -1;
     row.classList.toggle('hidden', !match);
   });
 }
@@ -1497,7 +1523,7 @@ function filterCalendar(color, btn) {
 function buildColorView() {
   const grid = document.getElementById('colorGrid');
   grid.innerHTML = Object.entries(COLORS).map(([key, c]) => {
-    const matching = PLANTS.filter(p => p.colorKey === key);
+    const matching = PLANTS.filter(p => p.colorKeys && p.colorKeys.indexOf(key) !== -1);
     if (!matching.length) return '';
     const rows = matching.map(p =>
       `<div class="color-plant-item" onclick="openModal(${p.id})">
