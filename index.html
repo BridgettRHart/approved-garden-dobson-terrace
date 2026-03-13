@@ -1495,7 +1495,7 @@ function buildCalendar() {
         ? `<td><span class="bloom-block" style="background:${dotColor}"></span></td>`
         : `<td></td>`
     ).join('');
-    return `<tr data-colorkeys="${(p.colorKeys||[]).join(',')||'none'}" data-primarycolor="${p.colorKey ? COLORS[p.colorKey].hex : '#aaa'}" onclick="openModal(${p.id})">
+    return `<tr data-colorkeys="${(p.colorKeys||[]).join(',')||'none'}" data-primarycolor="${p.colorKey ? COLORS[p.colorKey].hex : '#aaa'}" onclick="openModal('${p.id}')">
       <td class="plant-name-cell">
         <span class="color-dot" style="background:${dotColor}"></span>${p.name}
       </td>${cells}
@@ -1536,7 +1536,7 @@ function buildColorView() {
     const matching = PLANTS.filter(p => p.colorKeys && p.colorKeys.indexOf(key) !== -1);
     if (!matching.length) return '';
     const rows = matching.map(p =>
-      `<div class="color-plant-item" onclick="openModal(${p.id})">
+      `<div class="color-plant-item" onclick="openModal('${p.id}')">
         <span class="plant-link">${p.name}</span>
         <span class="bloom-time">${p.blooms || '—'}</span>
       </div>`
@@ -1566,7 +1566,7 @@ function buildPlantsView() {
     const colorPill = p.colorKey
       ? `<span class="spec-pill"><span class="color-swatch-inline" style="background:${dotColor}"></span>${p.color}</span>`
       : '';
-    return `<div class="plant-card" data-type="${p.type}" data-palette-id="${p.id}" onclick="openModal(${p.id})">
+    return `<div class="plant-card" data-type="${p.type}" data-palette-id="${p.id}" onclick="openModal('${p.id}')">
       <div class="plant-photo" style="position:relative">
         <img src="${p.photo}" alt="${p.name}"
           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
@@ -1574,7 +1574,7 @@ function buildPlantsView() {
           <span>🌿</span><span style="font-size:0.65rem">Photo coming soon</span>
         </div>
         <span class="plant-type-badge">${p.type}</span>
-        <span class="palette-chip" onclick="event.stopPropagation();togglePalette(${p.id},event)">
+        <span class="palette-chip" onclick="event.stopPropagation();togglePalette('${p.id}',event)">
           <input type="checkbox" class="palette-cb" />+ Palette
         </span>
       </div>
@@ -1588,7 +1588,7 @@ function buildPlantsView() {
         </div>
         <div class="plant-card-comment">${p.comments}</div>
         <div class="plant-card-footer">
-          <button class="btn-arc-single" onclick="event.stopPropagation();downloadARCForm(${p.id})">📄 Download ARC Form</button>
+          <button class="btn-arc-single" onclick="event.stopPropagation();downloadARCForm('${p.id}')">📄 Download ARC Form</button>
           <a class="btn-details" href="${p.url}" target="_blank" onclick="event.stopPropagation()">🔗</a>
         </div>
       </div>
@@ -1613,7 +1613,7 @@ function buildBuilderView() {
   list.innerHTML = bloomers.map(p => {
     const dotColor = p.colorKey ? COLORS[p.colorKey].hex : '#aaa';
     return `<label class="builder-check" data-palette-id="${p.id}">
-      <input type="checkbox" value="${p.id}" ${palette.has(p.id) ? 'checked' : ''} onchange="onBuilderCheck(${p.id}, this.checked)">
+      <input type="checkbox" value="${p.id}" ${palette.has(p.id) ? 'checked' : ''} onchange="onBuilderCheck('${p.id}', this.checked)">
       <span class="color-dot" style="background:${dotColor};width:9px;height:9px;border-radius:50%;display:inline-block;flex-shrink:0"></span>
       ${p.name}
     </label>`;
@@ -1698,7 +1698,7 @@ function openModal(id) {
        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
      <div class="photo-placeholder" style="display:none"><span style="font-size:3rem">🌿</span><span>Photo coming soon</span></div>
      <button class="modal-close" onclick="closeModal()">✕</button>
-     <span class="palette-chip" id="modalPaletteChip" style="top:auto;bottom:0.5rem;right:0.5rem;" onclick="togglePalette(${p.id},event);updatePaletteUI()">
+     <span class="palette-chip" id="modalPaletteChip" style="top:auto;bottom:0.5rem;right:0.5rem;" onclick="togglePalette('${p.id}',event);updatePaletteUI()">
        <input type="checkbox" class="palette-cb" ${palette.has(p.id) ? 'checked' : ''} />
        ${palette.has(p.id) ? '✓ In Palette' : '+ Palette'}
      </span>`;
