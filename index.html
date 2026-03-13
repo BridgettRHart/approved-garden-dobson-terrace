@@ -1793,7 +1793,7 @@ function buildBoardView() {
       : '';
     return '<div class="plant-card" style="border:2px solid var(--accent-light)" data-type="' + p.type + '">' +
       '<div class="plant-photo" style="position:relative">' +
-        '<img src="' + p.photo + '" alt="' + p.name + '" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />' +
+        '<img src="' + p.photo + '" alt="' + p.name + '" onerror="this.style.display=\x27none\x27;this.nextElementSibling.style.display=\x27flex\x27" />' +
         '<div class="photo-placeholder" style="display:none"><span>🌿</span><span style="font-size:0.65rem">Photo coming soon</span></div>' +
         '<span class="plant-type-badge" style="background:var(--accent)">STAGED</span>' +
       '</div>' +
