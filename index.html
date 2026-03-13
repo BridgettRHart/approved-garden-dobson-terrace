@@ -1314,14 +1314,23 @@ async function loadFromAirtable() {
     if (arcAtt && arcAtt.length) ARC_PDF_URL = arcAtt[0].url;
 
     // 2. Fetch Community Plants (Approved + Staged)
-    const cpFormula = 'AND(FIND("' + commId + '", ARRAYJOIN({Communities})), OR({Status}="Approved",{Status}="Staged"))';
+    // Fetch all Community Plants records and filter in JS
+    // (Airtable linked-record formulas are unreliable in filter params)
     let cpRecords = [], offset = null;
     do {
-      const params = '?filterByFormula=' + encodeURIComponent(cpFormula) + (offset ? '&offset=' + offset : '');
+      const params = '?view=Grid+view' + (offset ? '&offset=' + offset : '');
       const cpData = await airtableFetch('Community Plants', params);
       cpRecords = cpRecords.concat(cpData.records || []);
       offset = cpData.offset || null;
     } while (offset);
+
+    // Filter in JS: only records linked to this community with the right status
+    cpRecords = cpRecords.filter(function(cp) {
+      const linked = cp.fields['Communities'] || [];
+      const status = cp.fields['Status'];
+      return linked.indexOf(commId) !== -1 &&
+             (status === 'Approved' || status === 'Staged');
+    });
 
     if (!cpRecords.length) throw new Error('No plants found for this community');
 
