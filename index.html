@@ -1200,7 +1200,7 @@ footer a { color: #bbb; }
       <div class="modal-specs" id="modalSpecs"></div>
       <div class="modal-notes" id="modalNotes"></div>
       <div class="modal-actions">
-        <button class="modal-btn-arc" id="modalArcBtn" onclick="downloadARCForm(parseInt(document.getElementById('modal').dataset.plantId))">📄 Download ARC Form</button>
+        <button class="modal-btn-arc" id="modalArcBtn" onclick="downloadARCForm(document.getElementById('modal').dataset.plantId)">📄 Download ARC Form</button>
         <a class="modal-btn-link" id="modalLink" href="#" target="_blank">View ↗</a>
       </div>
     </div>
@@ -1275,10 +1275,12 @@ function colorsToKeys(colors) {
   if (colors.length > 1) keySet.add('multi');
   return Array.from(keySet);
 }
-// Keep colorKey as primary (first) for dot color display
+// Primary color: multi if multiple colors, otherwise first key
 function colorsToKey(colors) {
   const keys = colorsToKeys(colors);
-  return keys.length ? keys[0] : null;
+  if (!keys.length) return null;
+  if (colors && colors.length > 1) return 'multi';
+  return keys[0];
 }
 
 function parseAirtablePlant(rec) {
@@ -1427,7 +1429,7 @@ function togglePalette(id, e) {
 
 function updatePaletteUI() {
   document.querySelectorAll('[data-palette-id]').forEach(el => {
-    const id = parseInt(el.dataset.paletteId);
+    const id = el.dataset.paletteId;
     const active = palette.has(id);
     el.classList.toggle('in-palette', active);
     const cb = el.querySelector('.palette-cb');
@@ -1438,7 +1440,7 @@ function updatePaletteUI() {
     if (lbl) lbl.style.color = active ? 'white' : '#2C5F2D';
   });
   // sync modal palette chip if open
-  const modalId = parseInt(document.getElementById('modal').dataset.plantId || 0);
+  const modalId = document.getElementById('modal').dataset.plantId || '';
   if (modalId) {
     const chip = document.getElementById('modalPaletteChip');
     if (chip) {
@@ -1493,7 +1495,7 @@ function buildCalendar() {
         ? `<td><span class="bloom-block" style="background:${dotColor}"></span></td>`
         : `<td></td>`
     ).join('');
-    return `<tr data-colorkeys="${(p.colorKeys||[]).join(',')||'none'}" onclick="openModal(${p.id})">
+    return `<tr data-colorkeys="${(p.colorKeys||[]).join(',')||'none'}" data-primarycolor="${p.colorKey ? COLORS[p.colorKey].hex : '#aaa'}" onclick="openModal(${p.id})">
       <td class="plant-name-cell">
         <span class="color-dot" style="background:${dotColor}"></span>${p.name}
       </td>${cells}
@@ -1514,6 +1516,14 @@ function filterCalendar(color, btn) {
     const keys = (row.dataset.colorkeys || '').split(',');
     const match = color === 'all' || keys.indexOf(color) !== -1;
     row.classList.toggle('hidden', !match);
+    // Recolor bloom bars to match active filter color
+    const displayColor = (color !== 'all' && COLORS[color]) ? COLORS[color].hex : row.dataset.primarycolor;
+    row.querySelectorAll('.bloom-block').forEach(function(block) {
+      block.style.background = displayColor;
+    });
+    // Recolor the plant name dot
+    const dot = row.querySelector('.color-dot');
+    if (dot) dot.style.background = displayColor;
   });
 }
 
@@ -1624,11 +1634,11 @@ function onBuilderCheck(id, checked) {
 function updateBuilder() {
   // sync builder checkboxes FROM palette (so + Palette chip on cards reflects here too)
   document.querySelectorAll('#builderChecklist input[type="checkbox"]').forEach(cb => {
-    cb.checked = palette.has(parseInt(cb.value));
+    cb.checked = palette.has(cb.value);
   });
   // sync builder-check label highlight
   document.querySelectorAll('#builderChecklist .builder-check').forEach(lbl => {
-    const id = parseInt(lbl.dataset.paletteId);
+    const id = lbl.dataset.paletteId;
     lbl.style.background = palette.has(id) ? 'var(--primary-light)' : '';
   });
 
@@ -1734,7 +1744,7 @@ function arcRequest(plantName) {
 async function downloadARCForm(plantId) {
   // If a single plantId passed, use just that plant. Otherwise use full palette.
   const selected = plantId
-    ? PLANTS.filter(p => p.id === plantId)
+    ? PLANTS.filter(p => p.id === String(plantId))
     : PLANTS.filter(p => palette.has(p.id));
   if (!selected.length) return;
 
