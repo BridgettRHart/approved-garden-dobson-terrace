@@ -1518,8 +1518,14 @@ function buildColorView() {
 // PLANTS VIEW
 // ══════════════════════════════════════════════════════════════════
 function buildPlantsView() {
+  const TYPE_ORDER = ['Tree', 'Agave', 'Shrub', 'Ground Cover'];
+  const sorted = PLANTS.slice().sort(function(a, b) {
+    const ti = TYPE_ORDER.indexOf(a.type) - TYPE_ORDER.indexOf(b.type);
+    if (ti !== 0) return ti;
+    return a.name.localeCompare(b.name);
+  });
   const grid = document.getElementById('plantsGrid');
-  grid.innerHTML = PLANTS.map(p => {
+  grid.innerHTML = sorted.map(p => {
     const dotColor = p.colorKey ? COLORS[p.colorKey].hex : '#ccc';
     const colorPill = p.colorKey
       ? `<span class="spec-pill"><span class="color-swatch-inline" style="background:${dotColor}"></span>${p.color}</span>`
