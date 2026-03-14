@@ -1101,7 +1101,9 @@ footer a { color: #bbb; }
       <button class="filter-btn" onclick="filterPlants('Tree', this)">🌳 Trees</button>
       <button class="filter-btn" onclick="filterPlants('Agave', this)">🌵 Agaves</button>
       <button class="filter-btn" onclick="filterPlants('Shrub', this)">🌸 Shrubs</button>
-      <button class="filter-btn" onclick="filterPlants('Ground Cover', this)">🌿 Ground Cover</button>
+      <button class="filter-btn" onclick="filterPlants('Succulent', this)">🪴 Succulents</button>
+      <button class="filter-btn" onclick="filterPlants('Vine', this)">🌿 Vines</button>
+      <button class="filter-btn" onclick="filterPlants('Ground Cover', this)">☘️ Ground Cover</button>
     </div>
     <div class="plants-grid" id="plantsGrid"></div>
   </div>
@@ -1495,7 +1497,8 @@ function buildCalendar() {
         ? `<td><span class="bloom-block" style="background:${dotColor}"></span></td>`
         : `<td></td>`
     ).join('');
-    return `<tr data-colorkeys="${(p.colorKeys||[]).join(',')||'none'}" data-primarycolor="${p.colorKey ? COLORS[p.colorKey].hex : '#aaa'}" onclick="openModal('${p.id}')">
+    const isGreenOnlyRow = (p.colorKeys||[]).length === 1 && p.colorKeys[0] === 'green';
+    return `<tr data-colorkeys="${(p.colorKeys||[]).join(',')||'none'}" data-primarycolor="${p.colorKey ? COLORS[p.colorKey].hex : '#aaa'}" class="${isGreenOnlyRow ? 'hidden' : ''}" onclick="openModal('${p.id}')">
       <td class="plant-name-cell">
         <span class="color-dot" style="background:${dotColor}"></span>${p.name}
       </td>${cells}
@@ -1561,7 +1564,7 @@ function buildColorView() {
 // PLANTS VIEW
 // ══════════════════════════════════════════════════════════════════
 function buildPlantsView() {
-  const TYPE_ORDER = ['Tree', 'Agave', 'Shrub', 'Ground Cover'];
+  const TYPE_ORDER = ['Tree', 'Agave', 'Shrub', 'Succulent', 'Vine', 'Ground Cover'];
   const sorted = PLANTS.slice().sort(function(a, b) {
     const ti = TYPE_ORDER.indexOf(a.type) - TYPE_ORDER.indexOf(b.type);
     if (ti !== 0) return ti;
