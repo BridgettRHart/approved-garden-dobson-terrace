@@ -1694,7 +1694,7 @@ function updateBuilder() {
 // MODAL
 // ══════════════════════════════════════════════════════════════════
 function openModal(id) {
-  const p = PLANTS.find(x => x.id === id);
+  const p = PLANTS.find(x => x.id === id) || STAGED_PLANTS.find(x => x.id === id);
   if (!p) return;
   const dotColor = p.colorKey ? COLORS[p.colorKey].hex : '#aaa';
 
@@ -1852,7 +1852,7 @@ function buildBoardView() {
     const colorPill = p.colorKey
       ? '<span class="spec-pill"><span class="color-swatch-inline" style="background:' + dotColor + '"></span>' + p.color + '</span>'
       : '';
-    return '<div class="plant-card" style="border:2px solid var(--accent-light)" data-type="' + p.type + '">' +
+    return '<div class="plant-card" style="border:2px solid var(--accent-light);cursor:pointer" data-type="' + p.type + '" onclick="openModal(\'' + p.id + '\')">' +
       '<div class="plant-photo" style="position:relative">' +
         '<img src="' + p.photo + '" alt="' + p.name + '" onerror="this.style.display=\x27none\x27;this.nextElementSibling.style.display=\x27flex\x27" />' +
         '<div class="photo-placeholder" style="display:none"><span>🌿</span><span style="font-size:0.65rem">Photo coming soon</span></div>' +
