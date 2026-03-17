@@ -966,6 +966,86 @@ footer a { color: #bbb; }
   .container { padding: 1.5rem 1rem; }
   .modal-specs { grid-template-columns: 1fr; }
 }
+
+/* ── BOARD VOTING ────────────────────────────────────────────────── */
+.vote-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--sand-dark);
+}
+.vote-section-title {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--light);
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+.vote-tally {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+.tally-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.tally-yes  { background: #e8f0e9; color: #2C5F2D; }
+.tally-no   { background: #fde8e8; color: #C4312D; }
+.tally-more { background: #fdf3e0; color: #8a6a2a; }
+.vote-name-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+  align-items: center;
+}
+.vote-name-input {
+  flex: 1;
+  padding: 0.45rem 0.75rem;
+  border: 1.5px solid var(--sand-dark);
+  border-radius: 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  color: var(--charcoal);
+  outline: none;
+}
+.vote-name-input:focus { border-color: var(--primary); }
+.vote-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+.btn-vote {
+  flex: 1;
+  padding: 0.55rem 0.5rem;
+  border: none;
+  border-radius: 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+}
+.btn-vote:hover { opacity: 0.85; transform: translateY(-1px); }
+.btn-vote:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-vote-yes  { background: #2C5F2D; color: white; }
+.btn-vote-no   { background: #C4312D; color: white; }
+.btn-vote-more { background: #8a6a2a; color: white; }
+.vote-feedback {
+  font-size: 0.78rem;
+  text-align: center;
+  padding: 0.4rem;
+  border-radius: 5px;
+  margin-top: 0.5rem;
+  display: none;
+}
+.vote-feedback.success { background: #e8f0e9; color: #2C5F2D; display: block; }
+.vote-feedback.error   { background: #fde8e8; color: #C4312D; display: block; }
 </style>
 <!-- pdf-lib for client-side PDF form filling -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
@@ -1218,6 +1298,19 @@ footer a { color: #bbb; }
         <button class="modal-btn-arc" id="modalArcBtn" onclick="downloadARCForm(document.getElementById('modal').dataset.plantId)">📄 Download ARC Form</button>
         <a class="modal-btn-link" id="modalLink" href="#" target="_blank">View ↗</a>
       </div>
+      <div class="vote-section" id="voteSection" style="display:none">
+        <div class="vote-section-title">Board Vote</div>
+        <div class="vote-tally" id="voteTally"></div>
+        <div class="vote-name-row">
+          <input type="text" class="vote-name-input" id="voterName" placeholder="Your first name" maxlength="30" />
+        </div>
+        <div class="vote-buttons">
+          <button class="btn-vote btn-vote-yes"  onclick="submitVote('Yes')">✅ Yes</button>
+          <button class="btn-vote btn-vote-no"   onclick="submitVote('No')">❌ No</button>
+          <button class="btn-vote btn-vote-more" onclick="submitVote('More Info')">🤔 More Info</button>
+        </div>
+        <div class="vote-feedback" id="voteFeedback"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -1232,9 +1325,8 @@ footer a { color: #bbb; }
 // ══════════════════════════════════════════════════════════════════
 // AIRTABLE CONFIG
 // ══════════════════════════════════════════════════════════════════
-const AIRTABLE_TOKEN   = "patjPYiDq5kbDc1Ib.aa8985e989ca6b4f451ebf6293844417f964eff39891324ebb3758a24d6b4342";
-const AIRTABLE_BASE    = "app9CPgEWHf2uaT7e";
-const COMMUNITY_SLUG   = "Dobson Terrace"; // must match Name field in Communities table
+const PROXY_BASE       = "https://airtable-proxy.bridgettrhart.workers.dev/app9CPgEWHf2uaT7e";
+const COMMUNITY_SLUG   = "Dobson Terrace";
 const BOARD_PIN        = "2442";
 
 // Community data — populated at load time from Airtable
@@ -1256,11 +1348,17 @@ let STAGED_PLANTS = [];
 // ══════════════════════════════════════════════════════════════════
 // AIRTABLE HELPERS
 // ══════════════════════════════════════════════════════════════════
-async function airtableFetch(table, params) {
+async function airtableFetch(table, params, options) {
   params = params || '';
-  const url = 'https://api.airtable.com/v0/' + AIRTABLE_BASE + '/' + encodeURIComponent(table) + params;
-  const res = await fetch(url, { headers: { Authorization: 'Bearer ' + AIRTABLE_TOKEN } });
-  if (!res.ok) throw new Error('Airtable error: ' + res.status);
+  options = options || {};
+  const url = PROXY_BASE + '/' + encodeURIComponent(table) + params;
+  const fetchOptions = { headers: { 'Content-Type': 'application/json' } };
+  if (options.method) {
+    fetchOptions.method = options.method;
+    if (options.body) fetchOptions.body = JSON.stringify(options.body);
+  }
+  const res = await fetch(url, fetchOptions);
+  if (!res.ok) throw new Error('Proxy error: ' + res.status);
   return res.json();
 }
 
@@ -1751,6 +1849,20 @@ function openModal(id) {
   if (p.url) { link.href = p.url; link.style.display = 'flex'; }
   else { link.style.display = 'none'; }
 
+  // Vote section — only show for staged plants in board view
+  const voteSection = document.getElementById('voteSection');
+  const voteFeedback = document.getElementById('voteFeedback');
+  if (isStaged) {
+    voteSection.style.display = 'block';
+    voteFeedback.style.display = 'none';
+    voteFeedback.className = 'vote-feedback';
+    currentVotePlantId = p.id;
+    loadVoteTally(p.id);
+  } else {
+    voteSection.style.display = 'none';
+    currentVotePlantId = null;
+  }
+
   document.getElementById('modal').classList.add('open');
 }
 function closeModal() { document.getElementById('modal').classList.remove('open'); }
@@ -1892,6 +2004,73 @@ function buildBoardView() {
   }).join('');
 }
 
+
+// ══════════════════════════════════════════════════════════════════
+// BOARD VOTING
+// ══════════════════════════════════════════════════════════════════
+let currentVotePlantId = null;
+
+async function loadVoteTally(plantId) {
+  const tally = { Yes: 0, No: 0, 'More Info': 0 };
+  try {
+    const formula = encodeURIComponent('FIND("' + plantId + '", ARRAYJOIN({Plant}))');
+    const data = await airtableFetch('Board Votes', '?filterByFormula=' + formula);
+    (data.records || []).forEach(function(r) {
+      const v = r.fields['Vote'];
+      if (tally.hasOwnProperty(v)) tally[v]++;
+    });
+  } catch(e) { console.warn('Could not load vote tally', e); }
+  const el = document.getElementById('voteTally');
+  if (el) {
+    el.innerHTML =
+      '<span class="tally-chip tally-yes">✅ ' + tally['Yes'] + ' Yes</span>' +
+      '<span class="tally-chip tally-no">❌ ' + tally['No'] + ' No</span>' +
+      '<span class="tally-chip tally-more">🤔 ' + tally['More Info'] + ' More Info</span>';
+  }
+}
+
+async function submitVote(voteValue) {
+  const name = (document.getElementById('voterName').value || '').trim();
+  if (!name) {
+    const fb = document.getElementById('voteFeedback');
+    fb.textContent = 'Please enter your first name before voting.';
+    fb.className = 'vote-feedback error';
+    return;
+  }
+  if (!currentVotePlantId) return;
+
+  // Disable buttons while submitting
+  document.querySelectorAll('.btn-vote').forEach(function(b) { b.disabled = true; });
+  const fb = document.getElementById('voteFeedback');
+  fb.style.display = 'none';
+  fb.className = 'vote-feedback';
+
+  try {
+    await airtableFetch('Board Votes', '', {
+      method: 'POST',
+      body: {
+        fields: {
+          'Board Member': name,
+          'Vote': voteValue,
+          'Plant': [currentVotePlantId],
+          'Date': new Date().toISOString().split('T')[0]
+        }
+      }
+    });
+    fb.textContent = 'Vote recorded! Thank you, ' + name + '.';
+    fb.className = 'vote-feedback success';
+    // Refresh tally
+    await loadVoteTally(currentVotePlantId);
+    // Clear name input
+    document.getElementById('voterName').value = '';
+  } catch(e) {
+    fb.textContent = 'Could not save vote. Please try again.';
+    fb.className = 'vote-feedback error';
+  } finally {
+    document.querySelectorAll('.btn-vote').forEach(function(b) { b.disabled = false; });
+  }
+}
+
 window.showView = showView;
 window.filterCalendar = filterCalendar;
 window.filterPlants = filterPlants;
@@ -1906,6 +2085,7 @@ window.submitPaletteARC = submitPaletteARC;
 window.onBuilderCheck = onBuilderCheck;
 window.downloadARCForm = downloadARCForm;
 window.showBoardLogin = showBoardLogin;
+window.submitVote = submitVote;
 
 loadFromAirtable();
 </script>
