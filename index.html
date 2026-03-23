@@ -2013,11 +2013,21 @@ let currentVotePlantId = null;
 async function loadVoteTally(plantId) {
   const tally = { Yes: 0, No: 0, 'More Info': 0 };
   try {
-    const formula = encodeURIComponent('FIND("' + plantId + '", ARRAYJOIN({Plant}))');
-    const data = await airtableFetch('Board Votes', '?filterByFormula=' + formula);
-    (data.records || []).forEach(function(r) {
-      const v = r.fields['Vote'];
-      if (tally.hasOwnProperty(v)) tally[v]++;
+    // Fetch all Board Votes and filter in JS — linked record formulas are unreliable
+    let allVotes = [], offset = null;
+    do {
+      const params = '?view=Grid+view' + (offset ? '&offset=' + offset : '');
+      const data = await airtableFetch('Board Votes', params);
+      allVotes = allVotes.concat(data.records || []);
+      offset = data.offset || null;
+    } while (offset);
+
+    allVotes.forEach(function(r) {
+      const linked = r.fields['Plant'] || [];
+      if (linked.indexOf(plantId) !== -1) {
+        const v = r.fields['Vote'];
+        if (tally.hasOwnProperty(v)) tally[v]++;
+      }
     });
   } catch(e) { console.warn('Could not load vote tally', e); }
   const el = document.getElementById('voteTally');
