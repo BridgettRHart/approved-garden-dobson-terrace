@@ -82,22 +82,36 @@ header {
 @media (max-width: 600px) {
   .header-text p { display: none; }
 }
-.header-arc-btn {
-  background: var(--accent);
+.header-nav {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+.header-nav-btn {
+  background: rgba(255,255,255,0.15);
   color: white;
-  border: none;
-  padding: 0.5rem 1.2rem;
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: 0.4rem 0.85rem;
   border-radius: 4px;
   font-family: 'DM Sans', sans-serif;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 500;
   cursor: pointer;
   text-decoration: none;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
   transition: background 0.2s, transform 0.1s;
   white-space: nowrap;
 }
-.header-arc-btn:hover { background: #a8521f; transform: translateY(-1px); }
+.header-nav-btn:hover { background: rgba(255,255,255,0.25); transform: translateY(-1px); }
+.header-nav-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+@media (max-width: 600px) {
+  .header-nav { gap: 0.3rem; }
+  .header-nav-btn { font-size: 0.65rem; padding: 0.35rem 0.55rem; }
+}
 
 /* ── HERO ────────────────────────────────────────────────────────── */
 .hero {
@@ -1081,9 +1095,11 @@ footer a { color: #bbb; }
         <p>Powered by <strong>The Approved Garden</strong> · 2026</p>
       </div>
     </div>
-    <a class="header-arc-btn" href="https://portal.trestlemanagement.com/community/new-request" target="_blank">
-      Submit Planting Request →
-    </a>
+    <nav class="header-nav">
+      <a class="header-nav-btn" href="https://bit.ly/dobsonterraceevents" target="_blank">📅 Events</a>
+      <a class="header-nav-btn" href="https://bit.ly/dthelpboard" target="_blank">🤝 Help Board</a>
+      <a class="header-nav-btn active" href="https://bit.ly/DobsonTerracePlants" target="_blank">🌿 Plants</a>
+    </nav>
   </div>
 </header>
 
