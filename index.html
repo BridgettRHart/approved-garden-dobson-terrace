@@ -227,6 +227,7 @@ header {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch; /* smooth momentum scroll on iOS */
   border-radius: 10px;
+  position: relative;
   /* subtle hint that it scrolls */
   background:
     linear-gradient(to right, white 30%, rgba(255,255,255,0)),
@@ -279,10 +280,10 @@ header {
 .calendar-table {
   width: 100%;
   min-width: 700px;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   background: white;
   border-radius: 10px;
-  overflow: hidden;
   box-shadow: 0 2px 16px rgba(0,0,0,0.07);
 }
 .calendar-table thead tr:first-child th {
@@ -310,6 +311,7 @@ header {
   text-align: left;
   padding-left: 1rem;
   min-width: 180px;
+  position: -webkit-sticky;
   position: sticky;
   left: 0;
   z-index: 3;
@@ -334,11 +336,15 @@ header {
   font-size: 0.82rem;
   font-weight: 500;
   white-space: nowrap;
+  position: -webkit-sticky;
   position: sticky;
   left: 0;
   background: white;
   z-index: 2;
   box-shadow: 2px 0 4px rgba(0,0,0,0.06);
+}
+.calendar-table tbody tr:hover td.plant-name-cell {
+  background: var(--sand);
 }
 .plant-name-cell .color-dot {
   display: inline-block;
@@ -1096,8 +1102,8 @@ footer a { color: #bbb; }
       </div>
     </div>
     <nav class="header-nav">
-      <a class="header-nav-btn" href="https://bridgettrhart.github.io/dobson-terrace-events" target="_blank">📅 Events</a>
-      <a class="header-nav-btn" href="https://script.google.com/macros/s/AKfycbxRwFca9Xoe9nY-FC7dpvM3lb0aemYdnC4eINNuSfNkzQDwShCsRyxyWN3jwVZty093/exec" target="_blank">🤝 Help Board</a>
+      <a class="header-nav-btn" href="https://tinyurl.com/DobsonTerraceHelpBoard" target="_blank">🤝 Help Board</a>
+      <a class="header-nav-btn" href="https://tinyurl.com/DobsonTerraceVoice" target="_blank">🗣️ Community Voice</a>
     </nav>
   </div>
 </header>
