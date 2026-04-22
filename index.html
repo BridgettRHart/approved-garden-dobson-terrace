@@ -318,6 +318,11 @@ header {
   background: #f8f8f6;
   box-shadow: 2px 0 4px rgba(0,0,0,0.06);
 }
+@media (max-width: 640px) {
+  .calendar-table thead tr:last-child th.plant-col { min-width: 110px; padding-left: 0.5rem; }
+  .calendar-table tbody td.plant-name-cell { font-size: 0.72rem; padding-left: 0.5rem; max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
+  .calendar-table { min-width: 500px; }
+}
 .calendar-table tbody tr {
   border-bottom: 1px solid #f0ede8;
   transition: background 0.15s;
